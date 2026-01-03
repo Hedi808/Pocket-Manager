@@ -1,38 +1,26 @@
 package com.example.pocketmanager;
 
-import android.graphics.Bitmap;
-
 public class Expense {
 
     private String title;
-    private String amount;
-    private Bitmap photo;
+    private double amount;
+    private String imagePath;
 
-    public Expense(String title, String amount, Bitmap photo) {
+    public Expense(String title, double amount, String imagePath) {
         this.title = title;
         this.amount = amount;
-        this.photo = photo;
+        this.imagePath = imagePath;
     }
 
-    // GETTERS
     public String getTitle() {
         return title;
     }
 
-    public String getAmount() {
+    public double getAmount() {
         return amount;
     }
 
-    public Bitmap getPhoto() {
-        return photo;
-    }
-
-    // SETTERS (pour UPDATE)
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public void setAmount(String amount) {
-        this.amount = amount;
+    public String getImagePath() {
+        return imagePath;
     }
 }

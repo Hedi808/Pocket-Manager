@@ -4,48 +4,71 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import java.util.ArrayList;
 
 public class ExpenseListFragment extends Fragment {
 
-    private ExpenseAdapter adapter;
+    private RecyclerView recyclerView;
+    private Button btnAddExpense;
 
+    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_expense_list, container, false);
 
-        RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
-        FloatingActionButton fabAdd = view.findViewById(R.id.fabAdd);
+        recyclerView = view.findViewById(R.id.recyclerView);
+        btnAddExpense = view.findViewById(R.id.btnAddExpense);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        adapter = new ExpenseAdapter(
-                ExpenseRepository.expenses,
-                position -> ((MainActivity) requireActivity())
-                        .loadFragment(ViewExpenseFragment.newInstance(position))
-        );
+        loadExpenses();
 
-        recyclerView.setAdapter(adapter);
+        btnAddExpense.setOnClickListener(v -> {
+            requireActivity()
+                    .getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragmentContainer, new AddExpenseFragment())
+                    .addToBackStack(null)
+                    .commit();
+        });
 
-        fabAdd.setOnClickListener(v ->
-                ((MainActivity) requireActivity())
-                        .loadFragment(new AddExpenseFragment())
-        );
+        // Toolbar: titre + pas de bouton retour (page principale)
+        ((MainActivity) requireActivity()).showBack(false);
 
         return view;
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        adapter.notifyDataSetChanged();
-        ((MainActivity) requireActivity()).showBack(false);
+    private void loadExpenses() {
+
+        ArrayList<Expense> expenses =
+                ExpenseStorage.loadExpenses(requireContext());
+
+        ExpenseAdapter adapter = new ExpenseAdapter(
+                expenses,
+                expense -> {
+                    ViewExpenseFragment fragment =
+                            ViewExpenseFragment.newInstance(expense);
+
+                    requireActivity()
+                            .getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.fragmentContainer, fragment)
+                            .addToBackStack(null)
+                            .commit();
+                }
+        );
+
+        recyclerView.setAdapter(adapter);
     }
 }

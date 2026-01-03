@@ -1,5 +1,6 @@
 package com.example.pocketmanager;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,75 +8,117 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import java.io.File;
+import java.util.ArrayList;
 
 public class ViewExpenseFragment extends Fragment {
 
-    private static final String ARG_POSITION = "position";
-    private int position;
-    private Expense expense;
+    private static final String ARG_TITLE = "title";
+    private static final String ARG_AMOUNT = "amount";
+    private static final String ARG_IMAGE = "image";
 
-    public static ViewExpenseFragment newInstance(int position) {
+    private EditText etTitle, etAmount;
+    private ImageView imgReceipt;
+    private Button btnUpdate, btnDelete;
+
+    private String originalTitle;
+    private String imagePath;
+
+    // ✅ newInstance CORRECT
+    public static ViewExpenseFragment newInstance(Expense expense) {
         ViewExpenseFragment fragment = new ViewExpenseFragment();
         Bundle args = new Bundle();
-        args.putInt(ARG_POSITION, position);
+        args.putString(ARG_TITLE, expense.getTitle());
+        args.putDouble(ARG_AMOUNT, expense.getAmount());
+        args.putString(ARG_IMAGE, expense.getImagePath());
         fragment.setArguments(args);
         return fragment;
     }
 
+    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_view_expense, container, false);
 
-        position = getArguments().getInt(ARG_POSITION);
-        expense = ExpenseRepository.expenses.get(position);
+        etTitle = view.findViewById(R.id.etViewTitle);
+        etAmount = view.findViewById(R.id.etViewAmount);
+        imgReceipt = view.findViewById(R.id.imgViewReceipt);
+        btnUpdate = view.findViewById(R.id.btnUpdate);
+        btnDelete = view.findViewById(R.id.btnDelete);
 
-        EditText etTitle = view.findViewById(R.id.etViewTitle);
-        EditText etAmount = view.findViewById(R.id.etViewAmount);
-        ImageView img = view.findViewById(R.id.imgViewReceipt);
+        loadData();
 
-        Button btnUpdate = view.findViewById(R.id.btnUpdate);
-        Button btnDelete = view.findViewById(R.id.btnDelete);
+        btnUpdate.setOnClickListener(v -> updateExpense());
+        btnDelete.setOnClickListener(v -> deleteExpense());
 
-        etTitle.setText(expense.getTitle());
-        etAmount.setText(expense.getAmount());
-        img.setImageBitmap(expense.getPhoto());
-
-        btnUpdate.setOnClickListener(v -> {
-            expense.setTitle(etTitle.getText().toString());
-            expense.setAmount(etAmount.getText().toString());
-
-            Toast.makeText(getContext(),
-                    "Dépense modifiée",
-                    Toast.LENGTH_SHORT).show();
-
-            requireActivity()
-                    .getSupportFragmentManager()
-                    .popBackStack();
-        });
-
-        btnDelete.setOnClickListener(v -> {
-            ExpenseRepository.expenses.remove(position);
-
-            Toast.makeText(getContext(),
-                    "Dépense supprimée",
-                    Toast.LENGTH_SHORT).show();
-
-            requireActivity()
-                    .getSupportFragmentManager()
-                    .popBackStack();
-        });
+        ((MainActivity) requireActivity()).showBack(true);
 
         return view;
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        ((MainActivity) requireActivity()).showBack(true);
+    private void loadData() {
+        if (getArguments() == null) return;
+
+        originalTitle = getArguments().getString(ARG_TITLE);
+        imagePath = getArguments().getString(ARG_IMAGE);
+
+        etTitle.setText(originalTitle);
+        etAmount.setText(String.valueOf(getArguments().getDouble(ARG_AMOUNT)));
+
+        if (imagePath != null && !imagePath.isEmpty()) {
+            imgReceipt.setImageURI(Uri.fromFile(new File(imagePath)));
+        }
+    }
+
+    private void updateExpense() {
+
+        ArrayList<Expense> expenses =
+                ExpenseStorage.loadExpenses(requireContext());
+
+        for (Expense e : expenses) {
+            if (e.getTitle().equals(originalTitle)) {
+                expenses.remove(e);
+                break;
+            }
+        }
+
+        expenses.add(new Expense(
+                etTitle.getText().toString(),
+                Double.parseDouble(etAmount.getText().toString()),
+                imagePath
+        ));
+
+        ExpenseStorage.saveExpenses(requireContext(), expenses);
+
+        requireActivity()
+                .getSupportFragmentManager()
+                .popBackStack();
+    }
+
+    private void deleteExpense() {
+
+        ArrayList<Expense> expenses =
+                ExpenseStorage.loadExpenses(requireContext());
+
+        for (Expense e : expenses) {
+            if (e.getTitle().equals(originalTitle)) {
+                expenses.remove(e);
+                break;
+            }
+        }
+
+        ExpenseStorage.saveExpenses(requireContext(), expenses);
+
+        requireActivity()
+                .getSupportFragmentManager()
+                .popBackStack();
     }
 }
