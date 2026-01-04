@@ -18,6 +18,7 @@ public class ExpenseListFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private Button btnAddExpense;
+    private ArrayList<Expense> expenses;
 
     @Nullable
     @Override
@@ -32,33 +33,15 @@ public class ExpenseListFragment extends Fragment {
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        loadExpenses();
-
-        btnAddExpense.setOnClickListener(v -> {
-            requireActivity()
-                    .getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragmentContainer, new AddExpenseFragment())
-                    .addToBackStack(null)
-                    .commit();
-        });
-
-        // Toolbar: titre + pas de bouton retour (page principale)
-        ((MainActivity) requireActivity()).showBack(false);
-
-        return view;
-    }
-
-    private void loadExpenses() {
-
-        ArrayList<Expense> expenses =
-                ExpenseStorage.loadExpenses(requireContext());
+        expenses = ExpenseStorage.loadExpenses(requireContext());
 
         ExpenseAdapter adapter = new ExpenseAdapter(
                 expenses,
                 expense -> {
+                    int index = expenses.indexOf(expense);
+
                     ViewExpenseFragment fragment =
-                            ViewExpenseFragment.newInstance(expense);
+                            ViewExpenseFragment.newInstance(expense, index);
 
                     requireActivity()
                             .getSupportFragmentManager()
@@ -70,5 +53,18 @@ public class ExpenseListFragment extends Fragment {
         );
 
         recyclerView.setAdapter(adapter);
+
+        btnAddExpense.setOnClickListener(v -> {
+            requireActivity()
+                    .getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragmentContainer, new AddExpenseFragment())
+                    .addToBackStack(null)
+                    .commit();
+        });
+
+        ((MainActivity) requireActivity()).showBack(false);
+
+        return view;
     }
 }

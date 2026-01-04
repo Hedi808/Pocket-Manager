@@ -14,13 +14,20 @@
             android:id="@+id/etViewTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Titre de la dépense"/>
+            android:minHeight="48dp"
+            android:padding="12dp"
+            android:hint="Titre de la dépense"
+            android:enabled="false"/>
 
         <EditText
             android:id="@+id/etViewAmount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Montant"/>
+            android:minHeight="48dp"
+            android:padding="12dp"
+            android:hint="Montant (DT)"
+            android:enabled="false"
+            android:layout_marginTop="8dp"/>
 
         <ImageView
             android:id="@+id/imgViewReceipt"
@@ -28,22 +35,50 @@
             android:layout_height="200dp"
             android:layout_marginTop="12dp"
             android:scaleType="centerCrop"
-            android:src="@mipmap/ic_launcher"/>
+            android:background="#EEEEEE"
+            android:src="@android:drawable/ic_menu_camera"/>
+
+        <Spinner
+            android:id="@+id/spinnerCurrency"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:padding="12dp"
+            android:layout_marginTop="16dp"/>
+
+        <Button
+            android:id="@+id/btnConvert"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Convertir"
+            android:layout_marginTop="8dp"/>
+
+        <TextView
+            android:id="@+id/tvConverted"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Montant converti :"
+            android:textStyle="bold"
+            android:layout_marginTop="8dp"/>
 
         <Button
             android:id="@+id/btnUpdate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:minHeight="48dp"
+            android:layout_marginTop="24dp"
             android:text="Modifier la dépense"/>
 
         <Button
             android:id="@+id/btnDelete"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:minHeight="48dp"
             android:layout_marginTop="8dp"
-            android:text="Supprimer la dépense"/>
+            android:text="Supprimer la dépense"
+            android:backgroundTint="#D32F2F"
+            android:textColor="#FFFFFF"/>
 
     </LinearLayout>
-
 </ScrollView>

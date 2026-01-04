@@ -5,9 +5,13 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,21 +22,27 @@ import java.util.ArrayList;
 
 public class ViewExpenseFragment extends Fragment {
 
+    private static final String ARG_INDEX = "index";
     private static final String ARG_TITLE = "title";
     private static final String ARG_AMOUNT = "amount";
     private static final String ARG_IMAGE = "image";
 
     private EditText etTitle, etAmount;
     private ImageView imgReceipt;
-    private Button btnUpdate, btnDelete;
+    private Spinner spinnerCurrency;
+    private Button btnConvert, btnUpdate, btnDelete;
+    private TextView tvConverted;
 
-    private String originalTitle;
+    private int expenseIndex;
+    private double amountDT;
     private String imagePath;
 
-    // ✅ newInstance CORRECT
-    public static ViewExpenseFragment newInstance(Expense expense) {
+    private boolean isEditing = false;
+
+    public static ViewExpenseFragment newInstance(Expense expense, int index) {
         ViewExpenseFragment fragment = new ViewExpenseFragment();
         Bundle args = new Bundle();
+        args.putInt(ARG_INDEX, index);
         args.putString(ARG_TITLE, expense.getTitle());
         args.putDouble(ARG_AMOUNT, expense.getAmount());
         args.putString(ARG_IMAGE, expense.getImagePath());
@@ -51,12 +61,18 @@ public class ViewExpenseFragment extends Fragment {
         etTitle = view.findViewById(R.id.etViewTitle);
         etAmount = view.findViewById(R.id.etViewAmount);
         imgReceipt = view.findViewById(R.id.imgViewReceipt);
+        spinnerCurrency = view.findViewById(R.id.spinnerCurrency);
+        btnConvert = view.findViewById(R.id.btnConvert);
         btnUpdate = view.findViewById(R.id.btnUpdate);
         btnDelete = view.findViewById(R.id.btnDelete);
+        tvConverted = view.findViewById(R.id.tvConverted);
 
+        setupSpinner();
         loadData();
+        lockEditing();
 
-        btnUpdate.setOnClickListener(v -> updateExpense());
+        btnConvert.setOnClickListener(v -> convertAmount());
+        btnUpdate.setOnClickListener(v -> handleUpdate());
         btnDelete.setOnClickListener(v -> deleteExpense());
 
         ((MainActivity) requireActivity()).showBack(true);
@@ -64,17 +80,58 @@ public class ViewExpenseFragment extends Fragment {
         return view;
     }
 
+    // 🔒 Lecture seule
+    private void lockEditing() {
+        etTitle.setEnabled(false);
+        etAmount.setEnabled(false);
+        btnUpdate.setText("Modifier la dépense");
+        isEditing = false;
+    }
+
+    // ✏️ Mode édition
+    private void unlockEditing() {
+        etTitle.setEnabled(true);
+        etAmount.setEnabled(true);
+        etTitle.requestFocus();
+        btnUpdate.setText("Enregistrer les modifications");
+        isEditing = true;
+    }
+
+    private void handleUpdate() {
+        if (!isEditing) {
+            unlockEditing();
+        } else {
+            updateExpense();
+        }
+    }
+
+    private void setupSpinner() {
+        String[] currencies = {"EUR", "USD"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_item,
+                currencies
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerCurrency.setAdapter(adapter);
+    }
+
     private void loadData() {
         if (getArguments() == null) return;
 
-        originalTitle = getArguments().getString(ARG_TITLE);
+        expenseIndex = getArguments().getInt(ARG_INDEX);
+        amountDT = getArguments().getDouble(ARG_AMOUNT);
         imagePath = getArguments().getString(ARG_IMAGE);
 
-        etTitle.setText(originalTitle);
-        etAmount.setText(String.valueOf(getArguments().getDouble(ARG_AMOUNT)));
+        etTitle.setText(getArguments().getString(ARG_TITLE));
+        etAmount.setText(String.valueOf(amountDT));
 
         if (imagePath != null && !imagePath.isEmpty()) {
-            imgReceipt.setImageURI(Uri.fromFile(new File(imagePath)));
+            File imgFile = new File(imagePath);
+            if (imgFile.exists()) {
+                imgReceipt.setImageURI(null);
+                imgReceipt.setImageURI(Uri.fromFile(imgFile));
+            }
         }
     }
 
@@ -83,24 +140,22 @@ public class ViewExpenseFragment extends Fragment {
         ArrayList<Expense> expenses =
                 ExpenseStorage.loadExpenses(requireContext());
 
-        for (Expense e : expenses) {
-            if (e.getTitle().equals(originalTitle)) {
-                expenses.remove(e);
-                break;
-            }
-        }
+        if (expenseIndex < 0 || expenseIndex >= expenses.size()) return;
 
-        expenses.add(new Expense(
-                etTitle.getText().toString(),
-                Double.parseDouble(etAmount.getText().toString()),
-                imagePath
-        ));
+        expenses.set(
+                expenseIndex,
+                new Expense(
+                        etTitle.getText().toString(),
+                        Double.parseDouble(etAmount.getText().toString()),
+                        imagePath
+                )
+        );
 
         ExpenseStorage.saveExpenses(requireContext(), expenses);
 
-        requireActivity()
-                .getSupportFragmentManager()
-                .popBackStack();
+        Toast.makeText(getContext(), "Dépense modifiée", Toast.LENGTH_SHORT).show();
+
+        lockEditing();
     }
 
     private void deleteExpense() {
@@ -108,17 +163,44 @@ public class ViewExpenseFragment extends Fragment {
         ArrayList<Expense> expenses =
                 ExpenseStorage.loadExpenses(requireContext());
 
-        for (Expense e : expenses) {
-            if (e.getTitle().equals(originalTitle)) {
-                expenses.remove(e);
-                break;
-            }
-        }
+        if (expenseIndex < 0 || expenseIndex >= expenses.size()) return;
+
+        expenses.remove(expenseIndex);
 
         ExpenseStorage.saveExpenses(requireContext(), expenses);
+
+        Toast.makeText(getContext(), "Dépense supprimée", Toast.LENGTH_SHORT).show();
 
         requireActivity()
                 .getSupportFragmentManager()
                 .popBackStack();
+    }
+
+    private void convertAmount() {
+
+        String currency = spinnerCurrency.getSelectedItem().toString();
+        double rateDtToEur = 1 / 3.3;
+
+        if (currency.equals("EUR")) {
+            tvConverted.setText(
+                    String.format("Montant converti : %.2f EUR", amountDT * rateDtToEur)
+            );
+            return;
+        }
+
+        new Thread(() -> {
+            try {
+                double rate = ExchangeRateApi.getRate("EUR", "USD");
+                double result = amountDT * rateDtToEur * rate;
+
+                requireActivity().runOnUiThread(() ->
+                        tvConverted.setText(
+                                String.format("Montant converti : %.2f USD", result)
+                        )
+                );
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 }
