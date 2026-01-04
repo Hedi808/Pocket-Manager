@@ -39,6 +39,7 @@ public class ViewExpenseFragment extends Fragment {
 
     private boolean isEditing = false;
 
+    // 🔹 Création du fragment avec index
     public static ViewExpenseFragment newInstance(Expense expense, int index) {
         ViewExpenseFragment fragment = new ViewExpenseFragment();
         Bundle args = new Bundle();
@@ -71,16 +72,36 @@ public class ViewExpenseFragment extends Fragment {
         loadData();
         lockEditing();
 
+        // 🔹 Conversion
         btnConvert.setOnClickListener(v -> convertAmount());
+
+        // 🔹 Modifier / Enregistrer
         btnUpdate.setOnClickListener(v -> handleUpdate());
+
+        // 🔹 Supprimer
         btnDelete.setOnClickListener(v -> deleteExpense());
+
+        // 🔹 Clic sur l'image → plein écran
+        imgReceipt.setOnClickListener(v -> {
+            if (imagePath != null && !imagePath.isEmpty()) {
+                FullImageFragment fragment =
+                        FullImageFragment.newInstance(imagePath);
+
+                requireActivity()
+                        .getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragmentContainer, fragment)
+                        .addToBackStack(null)
+                        .commit();
+            }
+        });
 
         ((MainActivity) requireActivity()).showBack(true);
 
         return view;
     }
 
-    // 🔒 Lecture seule
+    // 🔒 Mode lecture seule
     private void lockEditing() {
         etTitle.setEnabled(false);
         etAmount.setEnabled(false);
