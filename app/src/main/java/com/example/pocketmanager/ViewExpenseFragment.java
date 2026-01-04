@@ -34,7 +34,6 @@ public class ViewExpenseFragment extends Fragment {
     private TextView tvConverted;
 
     private int expenseIndex;
-    private double amountDT;
     private String imagePath;
 
     private boolean isEditing = false;
@@ -81,7 +80,7 @@ public class ViewExpenseFragment extends Fragment {
         // 🔹 Supprimer
         btnDelete.setOnClickListener(v -> deleteExpense());
 
-        // 🔹 Clic sur l'image → plein écran
+        // 🔹 Clic image → plein écran
         imgReceipt.setOnClickListener(v -> {
             if (imagePath != null && !imagePath.isEmpty()) {
                 FullImageFragment fragment =
@@ -101,7 +100,7 @@ public class ViewExpenseFragment extends Fragment {
         return view;
     }
 
-    // 🔒 Mode lecture seule
+    // 🔒 Lecture seule
     private void lockEditing() {
         etTitle.setEnabled(false);
         etAmount.setEnabled(false);
@@ -141,11 +140,10 @@ public class ViewExpenseFragment extends Fragment {
         if (getArguments() == null) return;
 
         expenseIndex = getArguments().getInt(ARG_INDEX);
-        amountDT = getArguments().getDouble(ARG_AMOUNT);
         imagePath = getArguments().getString(ARG_IMAGE);
 
         etTitle.setText(getArguments().getString(ARG_TITLE));
-        etAmount.setText(String.valueOf(amountDT));
+        etAmount.setText(String.valueOf(getArguments().getDouble(ARG_AMOUNT)));
 
         if (imagePath != null && !imagePath.isEmpty()) {
             File imgFile = new File(imagePath);
@@ -197,7 +195,11 @@ public class ViewExpenseFragment extends Fragment {
                 .popBackStack();
     }
 
+    // ✅ CORRECTION MAJEURE ICI
     private void convertAmount() {
+
+        // 🔹 TOUJOURS lire la valeur ACTUELLE du champ
+        double amountDT = Double.parseDouble(etAmount.getText().toString());
 
         String currency = spinnerCurrency.getSelectedItem().toString();
         double rateDtToEur = 1 / 3.3;
