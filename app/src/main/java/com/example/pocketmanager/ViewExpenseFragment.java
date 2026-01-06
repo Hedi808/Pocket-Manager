@@ -232,7 +232,7 @@ public class ViewExpenseFragment extends Fragment {
                         String result = String.format("%.2f %s", convertedAmount, selectedCurrency);
                         tvConverted.setText("Montant converti : " + result);
                         btnConvert.setEnabled(true);
-                        btnConvert.setText("Convertir");
+                        btnConvert.setText("💱 Convertir");
                     });
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -250,7 +250,7 @@ public class ViewExpenseFragment extends Fragment {
                         }
                         Toast.makeText(requireContext(), userMessage, Toast.LENGTH_LONG).show();
                         btnConvert.setEnabled(true);
-                        btnConvert.setText("Convertir");
+                        btnConvert.setText("💱 Convertir");
                     });
                 }
             });
@@ -278,6 +278,4 @@ public class ViewExpenseFragment extends Fragment {
             return null;
         }
     }
- ,;:!}
-3
-032;,nb vvb0
+}

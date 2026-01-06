@@ -14,54 +14,71 @@
             android:id="@+id/etViewTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:padding="12dp"
+            android:minHeight="56dp"
+            android:padding="16dp"
             android:hint="Titre de la dépense"
             android:inputType="text"
             android:enabled="true"
             android:focusable="true"
             android:focusableInTouchMode="true"
-            android:backgroundTint="#B15CFF"/>
+            android:background="@drawable/edittext_modern_focused"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#888888"
+            android:textSize="16sp"
+            android:elevation="2dp"/>
 
         <EditText
             android:id="@+id/etViewAmount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:padding="12dp"
+            android:minHeight="56dp"
+            android:padding="16dp"
             android:hint="Montant (DT)"
             android:inputType="numberDecimal"
             android:enabled="true"
             android:focusable="true"
             android:focusableInTouchMode="true"
-            android:layout_marginTop="8dp"
-            android:backgroundTint="#B15CFF"/>
+            android:layout_marginTop="12dp"
+            android:background="@drawable/edittext_modern_focused"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#888888"
+            android:textSize="16sp"
+            android:elevation="2dp"/>
 
         <ImageView
             android:id="@+id/imgViewReceipt"
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="16dp"
             android:scaleType="centerCrop"
-            android:background="#EEEEEE"
-            android:src="@android:drawable/ic_menu_camera"/>
+            android:background="@drawable/imageview_rounded"
+            android:src="@android:drawable/ic_menu_camera"
+            android:padding="4dp"
+            android:elevation="4dp"/>
 
         <Spinner
             android:id="@+id/spinnerCurrency"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:padding="12dp"
-            android:layout_marginTop="16dp"/>
+            android:minHeight="56dp"
+            android:padding="16dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/edittext_modern"
+            android:popupBackground="#1E1E1E"
+            android:elevation="2dp"/>
 
         <Button
             android:id="@+id/btnConvert"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:text="Convertir"
-            android:backgroundTint="#B15CFF"
+            android:minHeight="56dp"
+            android:text="💱 Convertir"
+            android:background="@drawable/button_primary_pressed"
             android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05"
+            android:elevation="4dp"
             android:layout_marginTop="8dp"/>
 
         <TextView
@@ -72,28 +89,39 @@
             android:textStyle="bold"
             android:textSize="16sp"
             android:textColor="#B15CFF"
-            android:padding="12dp"
-            android:layout_marginTop="8dp"
-            android:background="#1E1E1E"
-            android:gravity="center"/>
+            android:padding="16dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/button_secondary"
+            android:gravity="center"
+            android:minHeight="48dp"/>
 
         <Button
             android:id="@+id/btnUpdate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="48dp"
+            android:minHeight="56dp"
             android:layout_marginTop="24dp"
-            android:text="Modifier la dépense"/>
+            android:text="✏️ Modifier la dépense"
+            android:background="@drawable/button_primary_pressed"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05"
+            android:elevation="4dp"/>
 
         <Button
             android:id="@+id/btnDelete"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:layout_marginTop="8dp"
-            android:text="Supprimer la dépense"
-            android:backgroundTint="#D32F2F"
-            android:textColor="#FFFFFF"/>
+            android:minHeight="56dp"
+            android:layout_marginTop="12dp"
+            android:text="🗑️ Supprimer la dépense"
+            android:background="@drawable/button_danger"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05"
+            android:elevation="4dp"/>
 
     </LinearLayout>
 </ScrollView>

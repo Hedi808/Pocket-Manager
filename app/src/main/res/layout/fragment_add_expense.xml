@@ -26,8 +26,13 @@
             android:layout_height="wrap_content"
             android:hint="Titre de la dépense"
             android:inputType="text"
-            android:minHeight="48dp"
-            android:padding="12dp" />
+            android:minHeight="56dp"
+            android:padding="16dp"
+            android:background="@drawable/edittext_modern_focused"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#888888"
+            android:textSize="16sp"
+            android:elevation="2dp" />
 
         <!-- ===== MONTANT ===== -->
         <EditText
@@ -36,9 +41,14 @@
             android:layout_height="wrap_content"
             android:hint="Montant (DT)"
             android:inputType="numberDecimal"
-            android:minHeight="48dp"
-            android:padding="12dp"
-            android:layout_marginTop="12dp" />
+            android:minHeight="56dp"
+            android:padding="16dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/edittext_modern_focused"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#888888"
+            android:textSize="16sp"
+            android:elevation="2dp" />
 
         <!-- ===== IMAGE DU REÇU ===== -->
         <ImageView
@@ -48,7 +58,10 @@
             android:layout_marginTop="16dp"
             android:scaleType="centerCrop"
             android:contentDescription="Image du reçu"
-            android:src="@mipmap/ic_launcher" />
+            android:background="@drawable/imageview_rounded"
+            android:src="@mipmap/ic_launcher"
+            android:padding="4dp"
+            android:elevation="4dp" />
 
         <!-- ===== PRENDRE PHOTO ===== -->
         <Button
@@ -57,7 +70,13 @@
             android:layout_height="wrap_content"
             android:text="📷 Prendre une photo"
             android:layout_marginTop="12dp"
-            android:minHeight="48dp" />
+            android:minHeight="56dp"
+            android:background="@drawable/button_primary_pressed"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05"
+            android:elevation="4dp" />
 
         <!-- ===== ANALYSE IA ===== -->
         <Button
@@ -65,17 +84,29 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="🧠 Analyser le reçu (IA)"
-            android:layout_marginTop="8dp"
-            android:minHeight="48dp" />
+            android:layout_marginTop="12dp"
+            android:minHeight="56dp"
+            android:background="@drawable/button_secondary"
+            android:textColor="#B15CFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05"
+            android:elevation="4dp" />
 
         <!-- ===== ENREGISTRER ===== -->
         <Button
             android:id="@+id/btnSaveExpense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Enregistrer la dépense"
-            android:layout_marginTop="16dp"
-            android:minHeight="48dp" />
+            android:text="✅ Enregistrer la dépense"
+            android:layout_marginTop="20dp"
+            android:minHeight="56dp"
+            android:background="@drawable/button_primary_pressed"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05"
+            android:elevation="6dp" />
 
     </LinearLayout>
 

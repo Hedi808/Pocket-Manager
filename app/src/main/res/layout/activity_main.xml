@@ -45,10 +45,16 @@
             android:id="@+id/btnStart"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Get Started"
+            android:text="🚀 Commencer"
             android:textAllCaps="false"
-            android:backgroundTint="#B15CFF"
+            android:minHeight="56dp"
+            android:minWidth="200dp"
+            android:background="@drawable/button_primary_pressed"
             android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05"
+            android:elevation="6dp"
             android:layout_marginTop="32dp"/>
     </LinearLayout>
 
