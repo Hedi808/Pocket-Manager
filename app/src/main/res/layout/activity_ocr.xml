@@ -14,31 +14,10 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Ajouter une dépense"
+            android:text="Résultat OCR"
             android:textSize="20sp"
             android:textStyle="bold"
             android:layout_marginBottom="16dp" />
-
-        <!-- ===== TITRE DEPENSE ===== -->
-        <EditText
-            android:id="@+id/etTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Titre de la dépense"
-            android:inputType="text"
-            android:minHeight="48dp"
-            android:padding="12dp" />
-
-        <!-- ===== MONTANT ===== -->
-        <EditText
-            android:id="@+id/etAmount"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Montant (DT)"
-            android:inputType="numberDecimal"
-            android:minHeight="48dp"
-            android:padding="12dp"
-            android:layout_marginTop="12dp" />
 
         <!-- ===== IMAGE DU REÇU ===== -->
         <ImageView
@@ -47,33 +26,41 @@
             android:layout_height="220dp"
             android:layout_marginTop="16dp"
             android:scaleType="centerCrop"
-            android:contentDescription="Image du reçu"
-            android:src="@mipmap/ic_launcher" />
+            android:contentDescription="Image du reçu" />
 
-        <!-- ===== PRENDRE PHOTO ===== -->
-        <Button
-            android:id="@+id/btnTakePhoto"
+        <!-- ===== TEXTE EXTRAISE DU REÇU ===== -->
+        <TextView
+            android:id="@+id/tvReceiptText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="📷 Prendre une photo"
+            android:text="Texte extrait du reçu apparaîtra ici"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp" />
+
+        <!-- ===== BOUTON POUR REPRENDRE LA PHOTO ===== -->
+        <Button
+            android:id="@+id/btnRetakePhoto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📷 Reprendre la photo"
             android:layout_marginTop="12dp"
             android:minHeight="48dp" />
 
-        <!-- ===== ANALYSE IA ===== -->
+        <!-- ===== BOUTON POUR ANALYSE MANUELLE ===== -->
         <Button
-            android:id="@+id/btnAnalyzeReceipt"
+            android:id="@+id/btnManualAnalysis"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="🧠 Analyser le reçu (IA)"
+            android:text="Analyser manuellement"
             android:layout_marginTop="8dp"
             android:minHeight="48dp" />
 
-        <!-- ===== ENREGISTRER ===== -->
+        <!-- ===== BOUTON POUR SAUVEGARDER LE REÇU ===== -->
         <Button
-            android:id="@+id/btnSaveExpense"
+            android:id="@+id/btnSaveReceipt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Enregistrer la dépense"
+            android:text="Enregistrer le reçu"
             android:layout_marginTop="16dp"
             android:minHeight="48dp" />
 

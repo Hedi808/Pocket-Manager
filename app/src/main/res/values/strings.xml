@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">PocketManager</string>
+    <string name="ocr_api_key">K89756878588957</string>
 </resources>

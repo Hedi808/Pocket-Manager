@@ -1,7 +1,9 @@
 package com.example.pocketmanager;
 
-import android.net.Uri;
+import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,116 +19,170 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import java.io.File;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ViewExpenseFragment extends Fragment {
 
     private static final String ARG_INDEX = "index";
-    private static final String ARG_TITLE = "title";
-    private static final String ARG_AMOUNT = "amount";
-    private static final String ARG_IMAGE = "image";
+
+    private int expenseIndex;
+    private Expense expense;
 
     private EditText etTitle, etAmount;
     private ImageView imgReceipt;
+    private Button btnUpdate, btnDelete, btnConvert;
     private Spinner spinnerCurrency;
-    private Button btnConvert, btnUpdate, btnDelete;
     private TextView tvConverted;
+    
+    private ExecutorService executorService;
+    private Handler mainHandler;
 
-    private int expenseIndex;
-    private String imagePath;
-
-    private boolean isEditing = false;
-
-    // 🔹 Création du fragment avec index
-    public static ViewExpenseFragment newInstance(Expense expense, int index) {
+    public static ViewExpenseFragment newInstance(int index) {
         ViewExpenseFragment fragment = new ViewExpenseFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_INDEX, index);
-        args.putString(ARG_TITLE, expense.getTitle());
-        args.putDouble(ARG_AMOUNT, expense.getAmount());
-        args.putString(ARG_IMAGE, expense.getImagePath());
         fragment.setArguments(args);
         return fragment;
     }
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_view_expense, container, false);
 
         etTitle = view.findViewById(R.id.etViewTitle);
         etAmount = view.findViewById(R.id.etViewAmount);
         imgReceipt = view.findViewById(R.id.imgViewReceipt);
-        spinnerCurrency = view.findViewById(R.id.spinnerCurrency);
-        btnConvert = view.findViewById(R.id.btnConvert);
         btnUpdate = view.findViewById(R.id.btnUpdate);
         btnDelete = view.findViewById(R.id.btnDelete);
+        btnConvert = view.findViewById(R.id.btnConvert);
+        spinnerCurrency = view.findViewById(R.id.spinnerCurrency);
         tvConverted = view.findViewById(R.id.tvConverted);
+        
+        // Initialize executor and handler for background tasks
+        executorService = Executors.newSingleThreadExecutor();
+        mainHandler = new Handler(Looper.getMainLooper());
 
-        setupSpinner();
-        loadData();
-        lockEditing();
+        if (getArguments() != null) {
+            expenseIndex = getArguments().getInt(ARG_INDEX);
+            ArrayList<Expense> expenses = ExpenseStorage.loadExpenses(requireContext());
+            if (expenseIndex >= 0 && expenseIndex < expenses.size()) {
+                expense = expenses.get(expenseIndex);
+            }
+        }
 
-        // 🔹 Conversion
-        btnConvert.setOnClickListener(v -> convertAmount());
+        // Check if expense is null to prevent crash
+        if (expense == null) {
+            Toast.makeText(requireContext(), "Dépense introuvable", Toast.LENGTH_SHORT).show();
+            requireActivity().getOnBackPressedDispatcher().onBackPressed();
+            return view;
+        }
 
-        // 🔹 Modifier / Enregistrer
-        btnUpdate.setOnClickListener(v -> handleUpdate());
+        // Show back button in toolbar and update title
+        if (requireActivity() instanceof MainActivity) {
+            MainActivity mainActivity = (MainActivity) requireActivity();
+            mainActivity.showBack(true);
+            mainActivity.setToolbarTitle("Détails de la dépense");
+        }
 
-        // 🔹 Supprimer
-        btnDelete.setOnClickListener(v -> deleteExpense());
+        // ================= DISPLAY =================
+        etTitle.setText(expense.getTitle());
+        etAmount.setText(String.valueOf(expense.getAmount()));
+        
+        // Make sure EditTexts are enabled and editable
+        etTitle.setEnabled(true);
+        etTitle.setFocusable(true);
+        etTitle.setFocusableInTouchMode(true);
+        etAmount.setEnabled(true);
+        etAmount.setFocusable(true);
+        etAmount.setFocusableInTouchMode(true);
 
-        // 🔹 Clic image → plein écran
-        imgReceipt.setOnClickListener(v -> {
-            if (imagePath != null && !imagePath.isEmpty()) {
-                FullImageFragment fragment =
-                        FullImageFragment.newInstance(imagePath);
+        // Decoding the Base64 string and setting the image
+        if (expense.getImageBase64() != null && !expense.getImageBase64().isEmpty()) {
+            Bitmap bitmap = base64ToBitmap(expense.getImageBase64());
+            if (bitmap != null) {
+                imgReceipt.setImageBitmap(bitmap);
+            }
+        }
 
-                requireActivity()
-                        .getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.fragmentContainer, fragment)
-                        .addToBackStack(null)
-                        .commit();
+        // ================= CURRENCY CONVERSION SETUP =================
+        setupCurrencyConversion();
+
+        // ================= UPDATE =================
+        btnUpdate.setOnClickListener(v -> {
+
+            String newTitle = etTitle.getText().toString().trim();
+            String newAmountStr = etAmount.getText().toString().trim();
+
+            if (newTitle.isEmpty() || newAmountStr.isEmpty()) {
+                Toast.makeText(requireContext(),
+                        "Champs obligatoires",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            try {
+                double newAmount = Double.parseDouble(newAmountStr);
+                
+                if (newAmount < 0) {
+                    Toast.makeText(requireContext(),
+                            "Le montant doit être positif",
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                Expense updatedExpense = new Expense(
+                        newTitle,
+                        newAmount,
+                        expense.getImageBase64() != null ? expense.getImageBase64() : "" // Keep the same image Base64 string
+                );
+
+                ExpenseStorage.updateExpense(requireContext(), expenseIndex, updatedExpense);
+
+                Toast.makeText(requireContext(),
+                        "Dépense modifiée",
+                        Toast.LENGTH_SHORT).show();
+
+                // Go back to refresh the list
+                requireActivity().getOnBackPressedDispatcher().onBackPressed();
+            } catch (NumberFormatException e) {
+                Toast.makeText(requireContext(),
+                        "Montant invalide",
+                        Toast.LENGTH_SHORT).show();
+            } catch (Exception e) {
+                Toast.makeText(requireContext(),
+                        "Erreur lors de la modification",
+                        Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
             }
         });
 
-        ((MainActivity) requireActivity()).showBack(true);
+        // ================= DELETE =================
+        btnDelete.setOnClickListener(v -> {
+
+            ExpenseStorage.deleteExpense(requireContext(), expenseIndex);
+
+            Toast.makeText(requireContext(),
+                    "Dépense supprimée",
+                    Toast.LENGTH_SHORT).show();
+
+            requireActivity().getOnBackPressedDispatcher().onBackPressed();
+        });
 
         return view;
     }
 
-    // 🔒 Lecture seule
-    private void lockEditing() {
-        etTitle.setEnabled(false);
-        etAmount.setEnabled(false);
-        btnUpdate.setText("Modifier la dépense");
-        isEditing = false;
-    }
-
-    // ✏️ Mode édition
-    private void unlockEditing() {
-        etTitle.setEnabled(true);
-        etAmount.setEnabled(true);
-        etTitle.requestFocus();
-        btnUpdate.setText("Enregistrer les modifications");
-        isEditing = true;
-    }
-
-    private void handleUpdate() {
-        if (!isEditing) {
-            unlockEditing();
-        } else {
-            updateExpense();
-        }
-    }
-
-    private void setupSpinner() {
-        String[] currencies = {"EUR", "USD"};
+    // ================= CURRENCY CONVERSION =================
+    
+    private void setupCurrencyConversion() {
+        // Setup spinner with currency options
+        String[] currencies = {"USD", "EUR"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 requireContext(),
                 android.R.layout.simple_spinner_item,
@@ -134,96 +190,94 @@ public class ViewExpenseFragment extends Fragment {
         );
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCurrency.setAdapter(adapter);
+        
+        // Initialize converted amount text
+        tvConverted.setText("Montant converti : -");
+        
+        // Convert button click listener
+        btnConvert.setOnClickListener(v -> convertCurrency());
     }
-
-    private void loadData() {
-        if (getArguments() == null) return;
-
-        expenseIndex = getArguments().getInt(ARG_INDEX);
-        imagePath = getArguments().getString(ARG_IMAGE);
-
-        etTitle.setText(getArguments().getString(ARG_TITLE));
-        etAmount.setText(String.valueOf(getArguments().getDouble(ARG_AMOUNT)));
-
-        if (imagePath != null && !imagePath.isEmpty()) {
-            File imgFile = new File(imagePath);
-            if (imgFile.exists()) {
-                imgReceipt.setImageURI(null);
-                imgReceipt.setImageURI(Uri.fromFile(imgFile));
-            }
-        }
-    }
-
-    private void updateExpense() {
-
-        ArrayList<Expense> expenses =
-                ExpenseStorage.loadExpenses(requireContext());
-
-        if (expenseIndex < 0 || expenseIndex >= expenses.size()) return;
-
-        expenses.set(
-                expenseIndex,
-                new Expense(
-                        etTitle.getText().toString(),
-                        Double.parseDouble(etAmount.getText().toString()),
-                        imagePath
-                )
-        );
-
-        ExpenseStorage.saveExpenses(requireContext(), expenses);
-
-        Toast.makeText(getContext(), "Dépense modifiée", Toast.LENGTH_SHORT).show();
-
-        lockEditing();
-    }
-
-    private void deleteExpense() {
-
-        ArrayList<Expense> expenses =
-                ExpenseStorage.loadExpenses(requireContext());
-
-        if (expenseIndex < 0 || expenseIndex >= expenses.size()) return;
-
-        expenses.remove(expenseIndex);
-
-        ExpenseStorage.saveExpenses(requireContext(), expenses);
-
-        Toast.makeText(getContext(), "Dépense supprimée", Toast.LENGTH_SHORT).show();
-
-        requireActivity()
-                .getSupportFragmentManager()
-                .popBackStack();
-    }
-
-    // ✅ CORRECTION MAJEURE ICI
-    private void convertAmount() {
-
-        // 🔹 TOUJOURS lire la valeur ACTUELLE du champ
-        double amountDT = Double.parseDouble(etAmount.getText().toString());
-
-        String currency = spinnerCurrency.getSelectedItem().toString();
-        double rateDtToEur = 1 / 3.3;
-
-        if (currency.equals("EUR")) {
-            tvConverted.setText(
-                    String.format("Montant converti : %.2f EUR", amountDT * rateDtToEur)
-            );
+    
+    private void convertCurrency() {
+        String amountStr = etAmount.getText().toString().trim();
+        
+        if (amountStr.isEmpty()) {
+            Toast.makeText(requireContext(), "Veuillez entrer un montant", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        new Thread(() -> {
-            try {
-                double rate = ExchangeRateApi.getRate("EUR", "USD");
-                double result = amountDT * rateDtToEur * rate;
-
-                requireActivity().runOnUiThread(() ->
-                        tvConverted.setText(
-                                String.format("Montant converti : %.2f USD", result)
-                        )
-                );
-            } catch (Exception e) {
-                e.printStackTrace();
+        
+        try {
+            double amount = Double.parseDouble(amountStr);
+            String selectedCurrency = (String) spinnerCurrency.getSelectedItem();
+            
+            if (selectedCurrency == null) {
+                Toast.makeText(requireContext(), "Veuillez sélectionner une devise", Toast.LENGTH_SHORT).show();
+                return;
             }
-        }).start();
+            
+            // Disable button during conversion
+            btnConvert.setEnabled(false);
+            btnConvert.setText("Conversion...");
+            tvConverted.setText("Conversion en cours...");
+            
+            // Perform conversion on background thread
+            executorService.execute(() -> {
+                try {
+                    // TND to selected currency
+                    double rate = ExchangeRateApi.getRate("TND", selectedCurrency);
+                    double convertedAmount = amount * rate;
+                    
+                    // Update UI on main thread
+                    mainHandler.post(() -> {
+                        String result = String.format("%.2f %s", convertedAmount, selectedCurrency);
+                        tvConverted.setText("Montant converti : " + result);
+                        btnConvert.setEnabled(true);
+                        btnConvert.setText("Convertir");
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    // Update UI on main thread with error
+                    final String errorMessage = e.getMessage() != null ? e.getMessage() : "Erreur inconnue";
+                    mainHandler.post(() -> {
+                        tvConverted.setText("Erreur de conversion");
+                        String userMessage = "Erreur lors de la conversion";
+                        if (errorMessage.contains("404") || errorMessage.contains("not found")) {
+                            userMessage = "Service de conversion non disponible. Vérifiez votre connexion internet.";
+                        } else if (errorMessage.contains("timeout") || errorMessage.contains("Timeout")) {
+                            userMessage = "Délai d'attente dépassé. Réessayez plus tard.";
+                        } else if (errorMessage.contains("HTTP error")) {
+                            userMessage = "Erreur de connexion au serveur de conversion.";
+                        }
+                        Toast.makeText(requireContext(), userMessage, Toast.LENGTH_LONG).show();
+                        btnConvert.setEnabled(true);
+                        btnConvert.setText("Convertir");
+                    });
+                }
+            });
+        } catch (NumberFormatException e) {
+            Toast.makeText(requireContext(), "Montant invalide", Toast.LENGTH_SHORT).show();
+        }
     }
-}
+    
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // Shutdown executor when fragment is destroyed
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdown();
+        }
+    }
+
+    // ================= CONVERT BASE64 TO BITMAP =================
+    private Bitmap base64ToBitmap(String base64String) {
+        try {
+            byte[] decodedString = android.util.Base64.decode(base64String, android.util.Base64.DEFAULT);
+            return android.graphics.BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+ ,;:!}
+3
+032;,nb vvb0

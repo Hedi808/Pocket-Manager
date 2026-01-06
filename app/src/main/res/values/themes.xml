@@ -1,8 +1,10 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.PocketManager" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Base.Theme.PocketManager" parent="Theme.AppCompat.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">#B15CFF</item>
+        <item name="colorPrimaryDark">#8B3FC7</item>
+        <item name="android:windowBackground">#121212</item>
     </style>
 
     <style name="Theme.PocketManager" parent="Base.Theme.PocketManager" />

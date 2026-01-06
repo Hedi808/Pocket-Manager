@@ -17,7 +17,11 @@
             android:minHeight="48dp"
             android:padding="12dp"
             android:hint="Titre de la dépense"
-            android:enabled="false"/>
+            android:inputType="text"
+            android:enabled="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:backgroundTint="#B15CFF"/>
 
         <EditText
             android:id="@+id/etViewAmount"
@@ -26,8 +30,12 @@
             android:minHeight="48dp"
             android:padding="12dp"
             android:hint="Montant (DT)"
-            android:enabled="false"
-            android:layout_marginTop="8dp"/>
+            android:inputType="numberDecimal"
+            android:enabled="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="#B15CFF"/>
 
         <ImageView
             android:id="@+id/imgViewReceipt"
@@ -52,15 +60,22 @@
             android:layout_height="wrap_content"
             android:minHeight="48dp"
             android:text="Convertir"
+            android:backgroundTint="#B15CFF"
+            android:textColor="#FFFFFF"
             android:layout_marginTop="8dp"/>
 
         <TextView
             android:id="@+id/tvConverted"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Montant converti :"
+            android:text="Montant converti : -"
             android:textStyle="bold"
-            android:layout_marginTop="8dp"/>
+            android:textSize="16sp"
+            android:textColor="#B15CFF"
+            android:padding="12dp"
+            android:layout_marginTop="8dp"
+            android:background="#1E1E1E"
+            android:gravity="center"/>
 
         <Button
             android:id="@+id/btnUpdate"
